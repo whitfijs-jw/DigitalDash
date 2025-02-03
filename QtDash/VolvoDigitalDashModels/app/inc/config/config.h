@@ -4,15 +4,19 @@
 #include <QObject>
 #include <QSettings>
 #include <QDebug>
+
 #include <iostream>
+#include <memory>
 
 #include <config_keys.h>
 #include <can_frame_config.h>
-#include <units.h>
-
-#include <analog_12v_input.h>
 #include <sensor_configs.h>
 #include <gauge_configs.h>
+#include <screen_configs.h>
+
+#include <units.h>
+#include <analog_12v_input.h>
+
 
 /**
  * @brief Dash config class
@@ -98,11 +102,13 @@ public:
      */
     bool loadConfig();
 
+    bool loadScreenConfig();
+
     /**
      * @brief Print all child keys for the current config subgroup
      * @param setting: Group name to output to log
      */
-    void printKeys(QString setting, QSettings * config) const {
+    void printKeys(QString setting, const QSettings * config) const {
         for (auto key : config->childKeys()) {
             qDebug() << setting << key << ": " << config->value(key, "N/A").toStringList();
         }
@@ -287,12 +293,20 @@ public:
         return mSensorSupplyVoltage;
     }
 
+    qreal getScreenRotation() const {
+        if (mScreenConfig.use) {
+            return mScreenConfig.screenRotationAngle;
+        } else {
+            return 180;
+        }
+    }
+
 signals:
 
 public slots:
 
 private:
-    QSettings * mConfig = nullptr;  //!< QSettings for reading config.ini file
+    std::unique_ptr<QSettings> mConfig = nullptr;  //!< QSettings for reading config.ini file
     QMap<QString, int> mSensorChannelConfig; //!< sensor channel configuration
     qreal mSensorSupplyVoltage = ConfigKeys::DEFAULT_V_SUPPLY; //!< Sensor supply voltage
     QMap<QString, int> mDashLightConfig; //!< dash light gpio configuration
@@ -303,19 +317,20 @@ private:
     SensorConfig::TachInputConfig mTachConfig; //!< Tach signal input configuration
     QMap<QString, SensorConfig::ResistiveSensorConfig> mResistiveSensorConfig; //!< Resistive sensor configs
     QMap<QString, Analog12VInput::Analog12VInputConfig> mAnalog12VInputConfig; //!< 12V analog configs
+    ScreenConfigs::ScreenConfig_t mScreenConfig;
 
-    QSettings * mGaugeConfig = nullptr; //!< Gauge config QSettings
+    std::unique_ptr<QSettings> mGaugeConfig = nullptr; //!< Gauge config QSettings
     QMap<QString, GaugeConfig::GaugeConfig> mGaugeConfigs; //!< map of gauge configs
     GaugeConfig::SpeedoConfig mSpeedoGaugeConfig; //!< speedo gauge config
     GaugeConfig::TachoConfig mTachGaugeConfig; //!< tacho gauge config
     SensorConfig::VssInputConfig mVssInputConfig; //!< vehicle speed sensor config
 
-    QSettings * mOdometerConfig = nullptr; //!< odometer configration QSettings
+    std::unique_ptr<QSettings> mOdometerConfig = nullptr; //!< odometer configration QSettings
     QList<SensorConfig::OdometerConfig> mOdoConfig; //!< odometer config
 
     BacklightControlConfig_t mBacklightConfig; //!< backlight configuration
 
-    QSettings * mCanConfig; //!< can config Qsettings
+    std::unique_ptr<QSettings> mCanConfig; //!< can config Qsettings
     bool mEnableCan = false; //!< is Can enabled
     QList<CanFrameConfig> mCanFrameConfigs; //!< CAN frame configss
 

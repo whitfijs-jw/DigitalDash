@@ -47,7 +47,9 @@ int main(int argc, char *argv[])
     // Initialize Dash
 #ifdef RASPBERRY_PI
     Dash * dash = new Dash(&app, ctxt); // new scheme with sensor source -> sensor -> gauge -> model
+
     ctxt->setContextProperty("RASPBERRY_PI", QVariant(true));
+    ctxt->setContextProperty("SCREEN_ROTATION_ANGLE", QVariant(dash->getConfig().getScreenRotation()));
 
     QObject::connect(dash, &Dash::keyPress, [&engine](QKeyEvent * ev) {
         if (ev != nullptr) {
@@ -90,6 +92,7 @@ int main(int argc, char *argv[])
 #else
     DashHost * dash = new DashHost(&app, ctxt);
     ctxt->setContextProperty("RASPBERRY_PI", QVariant(false));
+    ctxt->setContextProperty("SCREEN_ROTATION_ANGLE", QVariant(0));
 
     QObject::connect(dash, &DashHost::keyPress, [&engine](QKeyEvent * ev) {
         if (ev != nullptr) {

@@ -89,6 +89,10 @@ public:
         mEventTiming.stop();
     }
 
+    const Config& getConfig() const {
+        return mConfig;
+    }
+
 signals:
     void keyPress(QKeyEvent * event);
 

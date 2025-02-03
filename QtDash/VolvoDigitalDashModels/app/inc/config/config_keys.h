@@ -218,6 +218,11 @@ namespace ConfigKeys {
     static constexpr char CAN_FRAME_ADD[] = "add";
     static constexpr char CAN_FRAME_GAUGE[] = "gauge";
 
+    //screen properties keys
+    static constexpr char SCREEN_PROP_GROUP[] = "screen_prop";
+    static constexpr char SCREEN_PROP_USE[] = "use";
+    static constexpr char SCREEN_PROP_ORIENTATION[] = "orientation_angle";
+
 }
 
 #endif // CONFIG_KEYS_H

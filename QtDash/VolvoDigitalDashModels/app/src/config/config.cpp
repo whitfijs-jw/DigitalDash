@@ -5,29 +5,35 @@ using namespace ConfigKeys;
 Config::Config(QObject * parent, QString configPath,
        QString gaugeConfigPath, QString odoConfigPath,
        QString canConfigPath): QObject(parent) {
-    mConfig = new QSettings(configPath, QSettings::IniFormat);
+
+    mConfig.reset(
+        new QSettings(
+            configPath,
+            QSettings::IniFormat
+        )
+    );
     loadConfig();
 
-    mGaugeConfig = new QSettings(gaugeConfigPath, QSettings::IniFormat);
+    mGaugeConfig.reset(new QSettings(gaugeConfigPath, QSettings::IniFormat));
     loadGaugeConfigs();
 
-    mOdometerConfig = new QSettings(odoConfigPath, QSettings::IniFormat);
+    mOdometerConfig.reset(new QSettings(odoConfigPath, QSettings::IniFormat));
     loadOdometerConfigs();
 
-    mCanConfig = new QSettings(canConfigPath, QSettings::IniFormat);
+    mCanConfig.reset(new QSettings(canConfigPath, QSettings::IniFormat));
     loadCanFrameConfigs();
 }
 
 bool Config::loadCanFrameConfigs() {
     // parse enable/disable
     mCanConfig->beginGroup(CAN_CONFIG_START);
-    printKeys("can", mCanConfig);
+    printKeys("can", mCanConfig.get());
     mEnableCan = mCanConfig->value(CAN_CONFIG_ENABLE, false).toBool();
     mCanConfig->endGroup();
 
     // dump keys to log
     mCanConfig->beginGroup(CAN_FRAME);
-    printKeys("can", mCanConfig);
+    printKeys("can", mCanConfig.get());
     mCanConfig->endGroup();
 
     // parse can frame data configs
@@ -63,7 +69,7 @@ bool Config::loadCanFrameConfigs() {
         }
 
         mCanFrameConfigs.append(config);
-        printKeys("can: ", mCanConfig);
+        printKeys("can: ", mCanConfig.get());
     }
     mCanConfig->endArray();
 
@@ -73,11 +79,11 @@ bool Config::loadCanFrameConfigs() {
 bool Config::loadOdometerConfigs() {
 
     mOdometerConfig->beginGroup("start");
-    printKeys("odo", mOdometerConfig);
+    printKeys("odo", mOdometerConfig.get());
     mOdometerConfig->endGroup();
 
     mOdometerConfig->beginGroup(ODOMETER_GROUP);
-    printKeys("odo", mOdometerConfig);
+    printKeys("odo", mOdometerConfig.get());
     mOdometerConfig->endGroup();
 
     int size = mOdometerConfig->beginReadArray(ODOMETER_GROUP);
@@ -92,7 +98,7 @@ bool Config::loadOdometerConfigs() {
         conf.name = mOdometerConfig->value(ODO_NAME, "").toString();
 
         mOdoConfig.push_back(conf);
-        printKeys("odo-vals", mOdometerConfig);
+        printKeys("odo-vals", mOdometerConfig.get());
     }
 
     mOdometerConfig->endArray();
@@ -195,7 +201,7 @@ bool Config::loadGaugeConfigs() {
     mSpeedoGaugeConfig.topSource = mGaugeConfig->value(TOP_VALUE_SOURCE).toString();
     mSpeedoGaugeConfig.topUnits = mGaugeConfig->value(TOP_VALUE_UNITS).toString();
 
-    printKeys("Speedometer: ", mGaugeConfig);
+    printKeys("Speedometer: ", mGaugeConfig.get());
 
     mGaugeConfig->endGroup();
 
@@ -204,7 +210,7 @@ bool Config::loadGaugeConfigs() {
     mTachGaugeConfig.maxRpm = mGaugeConfig->value(MAX_RPM).toInt();
     mTachGaugeConfig.redline = mGaugeConfig->value(REDLINE).toInt();
 
-    printKeys("Tachometer: ", mGaugeConfig);
+    printKeys("Tachometer: ", mGaugeConfig.get());
 
     mGaugeConfig->endGroup();
 
@@ -227,7 +233,7 @@ GaugeConfig::GaugeConfig Config::loadGaugeConfig(QString groupName) {
     conf.altDisplayUnits.aboveCutoff = mGaugeConfig->value(ALT_UNITS_ABOVE_THRS, false).toBool();
     conf.altDisplayUnits.cutoff = mGaugeConfig->value(ALT_UNITS_THRESHOLD, 0.0).toReal();
 
-    printKeys(groupName, mGaugeConfig);
+    printKeys(groupName, mGaugeConfig.get());
 
     mGaugeConfig->endGroup();
 
@@ -248,7 +254,7 @@ bool Config::loadConfig() {
         }
     }
 
-    printKeys("Sensor Channels ", mConfig);
+    printKeys("Sensor Channels ", mConfig.get());
 
     mConfig->endGroup();
 
@@ -259,7 +265,7 @@ bool Config::loadConfig() {
         mDashLightConfig.insert(key, mConfig->value(key, -1).toInt());
     }
 
-    printKeys("Dash Light Config ", mConfig);
+    printKeys("Dash Light Config ", mConfig.get());
 
     mConfig->endGroup();
 
@@ -282,7 +288,7 @@ bool Config::loadConfig() {
         }
     }
 
-    printKeys("User Inputs: ", mConfig);
+    printKeys("User Inputs: ", mConfig.get());
     mConfig->endGroup();
 
     //load map sensor config
@@ -302,7 +308,7 @@ bool Config::loadConfig() {
         }
     }
 
-    printKeys("Map Sensor ", mConfig);
+    printKeys("Map Sensor ", mConfig.get());
 
     mConfig->endGroup();
 
@@ -337,7 +343,7 @@ bool Config::loadConfig() {
 
         mTempSensorConfigs.append(conf);
 
-        printKeys("Temp Sensor ", mConfig);
+        printKeys("Temp Sensor ", mConfig.get());
     }
     mConfig->endArray();
 
@@ -348,7 +354,7 @@ bool Config::loadConfig() {
     mTachConfig.maxRpm = mConfig->value(TACH_MAX_RPM, 9000).toInt(); // default rpm is 9000 (a bit aspirational)
     mTachConfig.avgNumSamples = mConfig->value(TACH_AVG_NUM_SAMPLES, 4).toInt(); // default is to average over last 4 tach pulse spacing
 
-    printKeys("Tach Input ", mConfig);
+    printKeys("Tach Input ", mConfig.get());
 
     mConfig->endGroup();
 
@@ -399,7 +405,7 @@ bool Config::loadConfig() {
         }
 
         mResistiveSensorConfig.insert(rSensorConf.type, rSensorConf);
-        printKeys("Resistive Sensor: ", mConfig);
+        printKeys("Resistive Sensor: ", mConfig.get());
 
 
     }
@@ -438,7 +444,7 @@ bool Config::loadConfig() {
         }
 
         mAnalog12VInputConfig.insert(conf.type, conf);
-        printKeys("Analog 12V input: ", mConfig);
+        printKeys("Analog 12V input: ", mConfig.get());
     }
     mConfig->endArray();
 
@@ -456,7 +462,7 @@ bool Config::loadConfig() {
     mVssInputConfig.maxSpeed = mConfig->value(VSS_MAX_SPEED, 160).toInt();
     mVssInputConfig.useGps = mConfig->value(VSS_USE_GPS, false).toBool();
 
-    printKeys("VSS Input: ", mConfig);
+    printKeys("VSS Input: ", mConfig.get());
 
     mConfig->endGroup();
 
@@ -470,11 +476,25 @@ bool Config::loadConfig() {
     mBacklightConfig.useDimmer = mConfig->value(BACKLIGHT_USE_DIMMER, true).toBool();
     mBacklightConfig.activeLow = mConfig->value(BACKLIGHT_ACTIVE_LOW, false).toBool();
 
-    printKeys("Backlight Config: ", mConfig);
+    printKeys("Backlight Config: ", mConfig.get());
 
     mConfig->endGroup();
 
+    loadScreenConfig();
+
     return keys.size() > 0;
+}
+
+bool Config::loadScreenConfig() {
+    mConfig->beginGroup(SCREEN_PROP_GROUP);
+    mScreenConfig.use = mConfig->value(SCREEN_PROP_USE, false).toBool();
+    mScreenConfig.screenRotationAngle = mConfig->value(SCREEN_PROP_ORIENTATION, 180).toReal();
+
+    printKeys("Screen Properties: ", mConfig.get());
+
+    mConfig->endGroup();
+
+    return true;
 }
 
 bool Config::isMapConfigValid(QMap<QString, int> *map) {

@@ -52,7 +52,6 @@ namespace GaugeConfig {
         qreal maxRpm; //!< maximum rpm -- lowest possible value will help filter out noisier data
         qreal redline; //!< defines when numerical RPM indication will turn red
     };
-
 }
 
 #endif // GAUGE_CONFIGS_H

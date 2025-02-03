@@ -429,6 +429,7 @@ HEADERS += \
     inc/config/config.h \
     inc/config/config_keys.h \
     inc/config/gauge_configs.h \
+    inc/config/screen_configs.h \
     inc/config/sensor_configs.h \
     inc/dash/dash.h \
     inc/dash/dash_host.h \
